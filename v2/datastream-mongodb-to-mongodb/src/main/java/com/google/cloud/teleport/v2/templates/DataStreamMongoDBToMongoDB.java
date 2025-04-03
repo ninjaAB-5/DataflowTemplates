@@ -266,7 +266,13 @@ public class DataStreamMongoDBToMongoDB {
 
     void setDirectoryWatchDurationInMinutes(Integer value);
 
-    @Description("The DataStream Stream to Reference.")
+    @TemplateParameter.Text(
+        order = 23,
+        groupName = "Source",
+        optional = true,
+        description = "Datastream stream name.",
+        helpText =
+            "The name or template for the stream to poll for schema information and source type.")
     String getStreamName();
 
     void setStreamName(String value);
