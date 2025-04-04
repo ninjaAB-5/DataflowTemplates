@@ -1126,35 +1126,4 @@ public class DataStreamMongoDBToMongoDB {
       }
     }
   }
-
-  private static void cleanupShadowCollections(
-      MongoClient mongoClient, String shadowCollectionPrefix) {
-    LOG.info("Starting cleanup of shadow collections with prefix: {}", shadowCollectionPrefix);
-
-    // Get a list of all database names
-    List<String> databaseNames = mongoClient.listDatabaseNames().into(new ArrayList<>());
-    LOG.info("Found {} databases to check for shadow collections", databaseNames.size());
-
-    for (String databaseName : databaseNames) {
-      if (databaseName.equals("admin")
-          || databaseName.equals("local")
-          || databaseName.equals("config")) {
-        // Skip system databases
-        continue;
-      }
-      MongoDatabase database = mongoClient.getDatabase(databaseName);
-
-      // Get a list of all collection names in the database
-      List<String> collectionNames = database.listCollectionNames().into(new ArrayList<>());
-      database.listCollectionNames().into(collectionNames);
-
-      // Iterate through each collection and drop those with the prefix
-      for (String collectionName : collectionNames) {
-        if (collectionName.startsWith(shadowCollectionPrefix)) {
-          database.getCollection(collectionName).drop();
-          LOG.info("Dropped collection {} in database {}", collectionName, databaseName);
-        }
-      }
-    }
-  }
 }
