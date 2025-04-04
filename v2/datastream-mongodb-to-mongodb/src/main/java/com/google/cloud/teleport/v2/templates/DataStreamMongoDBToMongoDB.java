@@ -441,20 +441,11 @@ public class DataStreamMongoDBToMongoDB {
       PipelineResult result;
       if (options.getProcessBackfillFirst()) {
         LOG.info("Using backfill-first processing mode");
-        result = runWithBackfillFirst(options, connectionString);
+        runWithBackfillFirst(options, connectionString);
       } else {
         LOG.info("Using unified processing mode");
-        result = runAllEventsTogether(options, connectionString);
+        runAllEventsTogether(options, connectionString);
       }
-      result.waitUntilFinish();
-      LOG.info("Pipeline execution completed");
-
-      // Cleanup - remove the shadow collections after the migration
-      LOG.info(
-          "Starting cleanup of shadow collections with prefix: {}",
-          options.getShadowCollectionPrefix());
-      cleanupShadowCollections(mongoClient, options.getShadowCollectionPrefix());
-      LOG.info("Shadow collections cleanup completed");
 
       mongoClient.close();
       LOG.info("MongoDB client closed");
