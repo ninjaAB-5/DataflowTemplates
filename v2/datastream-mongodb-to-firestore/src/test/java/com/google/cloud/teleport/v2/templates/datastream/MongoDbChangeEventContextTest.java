@@ -29,9 +29,9 @@ import static org.junit.Assert.assertTrue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,6 +54,7 @@ public class MongoDbChangeEventContextTest {
 
   @Before
   public void setUp() throws JsonProcessingException {
+
     insertEvent =
         OBJECT_MAPPER.readTree(
             """
@@ -61,9 +62,7 @@ public class MongoDbChangeEventContextTest {
                   "_metadata_source": {
                     "collection": "test_collection"
                   },
-                  "_id": {
-                    "$oid": "645c9a7e7b8b1a0e9c0f8b3a"
-                  },
+                  "_id": "{\\\"$oid\\\": \\\"645c9a7e7b8b1a0e9c0f8b3a\\\"}",
                   "data": {
                     "field1": "value1",
                     "field2": 123
@@ -80,9 +79,7 @@ public class MongoDbChangeEventContextTest {
                   "_metadata_source": {
                     "collection": "test_collection"
                   },
-                  "_id": {
-                    "$oid": "645c9a7e7b8b1a0e9c0f8b3a"
-                  },
+                  "_id": "{\\\"$oid\\\": \\\"645c9a7e7b8b1a0e9c0f8b3a\\\"}",
                   "_metadata_timestamp_seconds": 1683782270,
                   "_metadata_timestamp_nanos": 123456789,
                   "op": "d",
@@ -96,9 +93,7 @@ public class MongoDbChangeEventContextTest {
                   "_metadata_source": {
                     "collection": "test_collection"
                   },
-                  "_id": {
-                    "$oid": "645c9a7e7b8b1a0e9c0f8b3a"
-                  },
+                  "_id": "{\\\"$oid\\\": \\\"645c9a7e7b8b1a0e9c0f8b3a\\\"}",
                   "data": {
                     "field1": "updated_value",
                     "field2": 456
@@ -128,7 +123,7 @@ public class MongoDbChangeEventContextTest {
                   "_metadata_source": {
                     "collection": "test_collection"
                   },
-                  "_id": [1, 2, 3],
+                  "_id": "[1, 2, 3]",
                   "_metadata_timestamp_seconds": 1683782270,
                   "_metadata_timestamp_nanos": 123456789
                 }""");
@@ -140,9 +135,7 @@ public class MongoDbChangeEventContextTest {
                   "_metadata_source": {
                     "collection": "test_collection"
                   },
-                  "_id": {
-                    "$oid": "645c9a7e7b8b1a0e9c0f8b3a"
-                  }
+                  "_id": "{\\\"$oid\\\": \\\"645c9a7e7b8b1a0e9c0f8b3a\\\"}"
                 }""");
   }
 
@@ -218,9 +211,7 @@ public class MongoDbChangeEventContextTest {
                   "_metadata_source": {
                     "collection": "test_collection"
                   },
-                  "_id": {
-                    "$oid": "645c9a7e7b8b1a0e9c0f8b3a"
-                  },
+                  "_id": "{ \\\"$oid\\\": \\\"645c9a7e7b8b1a0e9c0f8b3a\\\"}",
                   "data": {
                     "field1": "updated_value",
                     "field2": 456
@@ -231,8 +222,8 @@ public class MongoDbChangeEventContextTest {
     MongoDbChangeEventContext context =
         new MongoDbChangeEventContext(eventWithObjectId, SHADOW_PREFIX);
     assertNotNull(context.getDocumentId());
-    assertTrue(context.getDocumentId() instanceof ObjectNode);
-    assertEquals("{\"$oid\":\"645c9a7e7b8b1a0e9c0f8b3a\"}", context.getDocumentId().toString());
+    assertTrue(context.getDocumentId() instanceof ObjectId);
+    assertEquals("645c9a7e7b8b1a0e9c0f8b3a", context.getDocumentId().toString());
   }
 
   @Test
@@ -268,7 +259,7 @@ public class MongoDbChangeEventContextTest {
                   "_metadata_source": {
                     "collection": "test_collection"
                   },
-                  "_id": "test_id",
+                  "_id": "\\\"test_id\\\"",
                   "data": {
                     "field1": "updated_value",
                     "field2": 456
@@ -393,7 +384,7 @@ public class MongoDbChangeEventContextTest {
     String jsonString = context.toString();
 
     String expectedJson =
-        "{\"changeEvent\":{\"_metadata_source\":{\"collection\":\"test_collection\"},\"_id\":{\"$oid\":\"645c9a7e7b8b1a0e9c0f8b3a\"},\"data\":{\"field1\":\"value1\",\"field2\":123},\"_metadata_timestamp_seconds\":1683782270,\"_metadata_timestamp_nanos\":123456789,\"op\":\"i\"},"
+        "{\"changeEvent\":{\"_metadata_source\":{\"collection\":\"test_collection\"},\"_id\":\"{\\\"$oid\\\": \\\"645c9a7e7b8b1a0e9c0f8b3a\\\"}\",\"data\":{\"field1\":\"value1\",\"field2\":123},\"_metadata_timestamp_seconds\":1683782270,\"_metadata_timestamp_nanos\":123456789,\"op\":\"i\"},"
             + "\"dataCollection\":\"test_collection\","
             + "\"shadowCollection\":\"shadow_test_collection\","
             + "\"documentId\":{\"$oid\":\"645c9a7e7b8b1a0e9c0f8b3a\"},"

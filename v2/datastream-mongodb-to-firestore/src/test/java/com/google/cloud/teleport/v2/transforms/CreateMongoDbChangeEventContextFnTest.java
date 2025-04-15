@@ -71,9 +71,7 @@ public class CreateMongoDbChangeEventContextFnTest {
               "_metadata_source": {
                 "collection": "test_collection"
               },
-              "_id": {
-                "$oid": "645c9a7e7b8b1a0e9c0f8b3a"
-              },
+              "_id": "{\\\"$oid\\\": \\\"645c9a7e7b8b1a0e9c0f8b3a\\\"}",
               "data": {
                 "field1": "testString"
               },
@@ -101,8 +99,7 @@ public class CreateMongoDbChangeEventContextFnTest {
 
     assertEquals("test_collection", actualContext.getDataCollection());
     assertEquals(SHADOW_PREFIX + "test_collection", actualContext.getShadowCollection());
-    assertEquals(
-        "{\"$oid\":\"645c9a7e7b8b1a0e9c0f8b3a\"}", actualContext.getDocumentId().toString());
+    assertEquals("645c9a7e7b8b1a0e9c0f8b3a", actualContext.getDocumentId().toString());
   }
 
   @Test

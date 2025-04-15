@@ -24,15 +24,15 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public final class DataStreamMongoDBToMongoDBTest {
+public final class DataStreamMongoDBToFirestoreTest {
 
   @Test
   public void inputArgs_inputFilePattern() {
     String[] args = new String[] {"--inputFilePattern=gs://test-bkt/"};
-    DataStreamMongoDBToMongoDB.Options options =
+    DataStreamMongoDBToFirestore.Options options =
         PipelineOptionsFactory.fromArgs(args)
             .withValidation()
-            .as(DataStreamMongoDBToMongoDB.Options.class);
+            .as(DataStreamMongoDBToFirestore.Options.class);
     String inputFilePattern = options.getInputFilePattern();
 
     assertEquals(inputFilePattern, "gs://test-bkt/");
@@ -41,10 +41,10 @@ public final class DataStreamMongoDBToMongoDBTest {
   @Test
   public void inputArgs_connectionUri_startWithMongodb() {
     String[] args = new String[] {"--connectionUri=mongodb://my-connection-string"};
-    DataStreamMongoDBToMongoDB.Options options =
+    DataStreamMongoDBToFirestore.Options options =
         PipelineOptionsFactory.fromArgs(args)
             .withValidation()
-            .as(DataStreamMongoDBToMongoDB.Options.class);
+            .as(DataStreamMongoDBToFirestore.Options.class);
     String connectionUri = options.getConnectionUri();
 
     assertEquals(connectionUri, "mongodb://my-connection-string");
@@ -53,10 +53,10 @@ public final class DataStreamMongoDBToMongoDBTest {
   @Test
   public void inputArgs_connectionUri_startWithMongodbSrv() {
     String[] args = new String[] {"--connectionUri=mongodb+srv://my-connection-string"};
-    DataStreamMongoDBToMongoDB.Options options =
+    DataStreamMongoDBToFirestore.Options options =
         PipelineOptionsFactory.fromArgs(args)
             .withValidation()
-            .as(DataStreamMongoDBToMongoDB.Options.class);
+            .as(DataStreamMongoDBToFirestore.Options.class);
     String connectionUri = options.getConnectionUri();
 
     assertEquals(connectionUri, "mongodb+srv://my-connection-string");
@@ -65,21 +65,21 @@ public final class DataStreamMongoDBToMongoDBTest {
   @Test
   public void inputArgs_connectionUri_invalid() {
     String[] args = new String[] {"--connectionUri=my-connection-string"};
-    DataStreamMongoDBToMongoDB.Options options =
+    DataStreamMongoDBToFirestore.Options options =
         PipelineOptionsFactory.fromArgs(args)
             .withValidation()
-            .as(DataStreamMongoDBToMongoDB.Options.class);
+            .as(DataStreamMongoDBToFirestore.Options.class);
 
-    assertThrows(IllegalArgumentException.class, () -> DataStreamMongoDBToMongoDB.run(options));
+    assertThrows(IllegalArgumentException.class, () -> DataStreamMongoDBToFirestore.run(options));
   }
 
   @Test
   public void inputArgs_inputFileFormat_json() {
     String[] args = new String[] {"--inputFileFormat=json"};
-    DataStreamMongoDBToMongoDB.Options options =
+    DataStreamMongoDBToFirestore.Options options =
         PipelineOptionsFactory.fromArgs(args)
             .withValidation()
-            .as(DataStreamMongoDBToMongoDB.Options.class);
+            .as(DataStreamMongoDBToFirestore.Options.class);
     String inputFileFormat = options.getInputFileFormat();
 
     assertEquals(inputFileFormat, "json");
@@ -88,10 +88,10 @@ public final class DataStreamMongoDBToMongoDBTest {
   @Test
   public void inputArgs_inputFileFormat_avro() {
     String[] args = new String[] {"--inputFileFormat=avro"};
-    DataStreamMongoDBToMongoDB.Options options =
+    DataStreamMongoDBToFirestore.Options options =
         PipelineOptionsFactory.fromArgs(args)
             .withValidation()
-            .as(DataStreamMongoDBToMongoDB.Options.class);
+            .as(DataStreamMongoDBToFirestore.Options.class);
     String inputFileFormat = options.getInputFileFormat();
 
     assertEquals(inputFileFormat, "avro");
@@ -101,11 +101,11 @@ public final class DataStreamMongoDBToMongoDBTest {
   public void inputArgs_inputFileFormat_invalid() {
     String[] args =
         new String[] {"--connectionUri=mongodb://my-connection-string", "--inputFileFormat=other"};
-    DataStreamMongoDBToMongoDB.Options options =
+    DataStreamMongoDBToFirestore.Options options =
         PipelineOptionsFactory.fromArgs(args)
             .withValidation()
-            .as(DataStreamMongoDBToMongoDB.Options.class);
+            .as(DataStreamMongoDBToFirestore.Options.class);
 
-    assertThrows(IllegalArgumentException.class, () -> DataStreamMongoDBToMongoDB.run(options));
+    assertThrows(IllegalArgumentException.class, () -> DataStreamMongoDBToFirestore.run(options));
   }
 }

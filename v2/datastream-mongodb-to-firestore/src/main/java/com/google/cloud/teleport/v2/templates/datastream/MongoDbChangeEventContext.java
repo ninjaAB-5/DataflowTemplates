@@ -15,7 +15,7 @@
  */
 package com.google.cloud.teleport.v2.templates.datastream;
 
-import static com.google.cloud.teleport.v2.templates.DataStreamMongoDBToMongoDB.MAPPER_IGNORE_FIELDS;
+import static com.google.cloud.teleport.v2.templates.DataStreamMongoDBToFirestore.MAPPER_IGNORE_FIELDS;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.Objects;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
  * change events.
  */
 public class MongoDbChangeEventContext implements Serializable {
+
   private static final Logger LOG = LoggerFactory.getLogger(MongoDbChangeEventContext.class);
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -45,6 +47,7 @@ public class MongoDbChangeEventContext implements Serializable {
 
   public static final String TIMESTAMP_NANOS_COL = "nanos";
   public static final String DATA_COL = "data";
+  public static final String OID_FIELD_NAME = "$oid";
 
   private final JsonNode changeEvent;
   private final String dataCollection;
@@ -92,14 +95,16 @@ public class MongoDbChangeEventContext implements Serializable {
 
     // Extract document id
     if (changeEvent.has(DatastreamConstants.MONGODB_DOCUMENT_ID)) {
-      JsonNode docIdVal = changeEvent.get(DatastreamConstants.MONGODB_DOCUMENT_ID);
-      if (docIdVal.isLong()) {
+      JsonNode docIdVal =
+          OBJECT_MAPPER.readTree(changeEvent.get(DatastreamConstants.MONGODB_DOCUMENT_ID).asText());
+      if (docIdVal.isIntegralNumber()) {
         this.documentId = docIdVal.asLong();
       } else if (docIdVal.isTextual()) {
         this.documentId = docIdVal.asText();
-      } else if (docIdVal.isObject()) {
-        // TODO: Better handling of objectId type _id values.
-        this.documentId = docIdVal;
+      } else if (docIdVal.isObject()
+          && docIdVal.has(OID_FIELD_NAME)
+          && docIdVal.get(OID_FIELD_NAME).isTextual()) {
+        this.documentId = new ObjectId(docIdVal.get(OID_FIELD_NAME).asText());
       } else {
         LOG.error("Unsupported _id type of _id {}.", docIdVal);
         throw new IllegalArgumentException("Unsupported _id type.");
@@ -141,6 +146,7 @@ public class MongoDbChangeEventContext implements Serializable {
 
     // Highlight primary key fields
     shadowDoc.put(SHADOW_DOC_ID_COL, documentId);
+    shadowDoc.put(DOC_ID_COL, documentId);
 
     // Add timestamp information
     shadowDoc.put(TIMESTAMP_COL, this.timestampDoc);
@@ -216,7 +222,13 @@ public class MongoDbChangeEventContext implements Serializable {
       // Add other important fields
       jsonNode.put("dataCollection", this.dataCollection);
       jsonNode.put("shadowCollection", this.shadowCollection);
-      jsonNode.putPOJO("documentId", this.documentId);
+      if (this.documentId instanceof ObjectId) {
+        ObjectNode objectIdNode = OBJECT_MAPPER.createObjectNode();
+        objectIdNode.put(OID_FIELD_NAME, this.documentId.toString());
+        jsonNode.put("documentId", objectIdNode);
+      } else {
+        jsonNode.putPOJO("documentId", this.documentId);
+      }
       jsonNode.put("isDeleteEvent", this.isDeleteEvent);
 
       // Convert timestamp document to JSON

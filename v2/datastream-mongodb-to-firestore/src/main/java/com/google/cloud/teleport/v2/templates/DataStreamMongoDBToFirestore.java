@@ -28,7 +28,7 @@ import com.google.cloud.teleport.v2.cdc.dlq.StringDeadLetterQueueSanitizer;
 import com.google.cloud.teleport.v2.coders.FailsafeElementCoder;
 import com.google.cloud.teleport.v2.common.UncaughtExceptionLogger;
 import com.google.cloud.teleport.v2.datastream.sources.DataStreamIO;
-import com.google.cloud.teleport.v2.templates.DataStreamMongoDBToMongoDB.Options;
+import com.google.cloud.teleport.v2.templates.DataStreamMongoDBToFirestore.Options;
 import com.google.cloud.teleport.v2.templates.datastream.DatastreamConstants;
 import com.google.cloud.teleport.v2.templates.datastream.MongoDbChangeEventContext;
 import com.google.cloud.teleport.v2.transforms.CreateMongoDbChangeEventContextFn;
@@ -65,11 +65,6 @@ import org.apache.beam.sdk.options.Default;
 import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.options.StreamingOptions;
 import org.apache.beam.sdk.transforms.DoFn;
-import org.apache.beam.sdk.transforms.DoFn.FinishBundle;
-import org.apache.beam.sdk.transforms.DoFn.FinishBundleContext;
-import org.apache.beam.sdk.transforms.DoFn.Setup;
-import org.apache.beam.sdk.transforms.DoFn.StartBundle;
-import org.apache.beam.sdk.transforms.DoFn.Teardown;
 import org.apache.beam.sdk.transforms.Flatten;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.ParDo;
@@ -123,9 +118,9 @@ import org.slf4j.LoggerFactory;
     },
     flexContainerName = "datastream-mongodb-to-mongodb",
     optionsClass = Options.class)
-public class DataStreamMongoDBToMongoDB {
+public class DataStreamMongoDBToFirestore {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DataStreamMongoDBToMongoDB.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DataStreamMongoDBToFirestore.class);
   private static final String AVRO_SUFFIX = "avro";
   private static final String JSON_SUFFIX = "json";
   public static final Set<String> MAPPER_IGNORE_FIELDS =
