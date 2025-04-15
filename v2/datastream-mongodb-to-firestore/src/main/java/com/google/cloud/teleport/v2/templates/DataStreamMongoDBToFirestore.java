@@ -90,14 +90,14 @@ import org.slf4j.LoggerFactory;
  * for instructions on how to use or modify this template.
  */
 @Template(
-    name = "Cloud_Datastream_MongoDB_to_MongoDB",
+    name = "Cloud_Datastream_MongoDB_to_Firestore",
     category = TemplateCategory.STREAMING,
-    displayName = "Datastream to MongoDB",
+    displayName = "Datastream to Firestore",
     description = {
-      "The Datastream MongoDB to MongoDB template is a streaming pipeline that reads <a"
+      "The Datastream MongoDB to Firestore template is a streaming pipeline that reads <a"
           + " href=\"https://cloud.google.com/datastream/docs\">Datastream</a> events from a Cloud"
-          + " Storage bucket and writes them to a MongoDB database. It is intended for data"
-          + " migration from Datastream sources to MongoDB.\n",
+          + " Storage bucket and writes them to a Firestore with MongoDB compatibility database. It is intended for data"
+          + " migration from Datastream sources to Firestore with MongoDB compatibility.\n",
       "Data consistency is guaranteed only at the end of migration when all data has been written"
           + " to the destination database. To store ordering information for each record written to"
           + " the destination database, this template creates an additional collection (called a"
@@ -116,7 +116,7 @@ import org.slf4j.LoggerFactory;
           + " queue is a Cloud Storage folder which stores all the Datastream events that had"
           + " encountered errors."
     },
-    flexContainerName = "datastream-mongodb-to-mongodb",
+    flexContainerName = "datastream-mongodb-to-firestore",
     optionsClass = Options.class)
 public class DataStreamMongoDBToFirestore {
 

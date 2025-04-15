@@ -270,7 +270,7 @@ resource "google_project_service" "required" {
 resource "google_dataflow_flex_template_job" "generated" {
   depends_on              = [google_project_service.required]
   provider                = google-beta
-  container_spec_gcs_path = "gs://dataflow-templates-${var.region}/latest/flex/Cloud_Datastream_MongoDB_to_MongoDB"
+  container_spec_gcs_path = "gs://dataflow-templates-${var.region}/latest/flex/Cloud_Datastream_MongoDB_to_Firestore"
   parameters = {
     inputFilePattern                = var.inputFilePattern
     inputFileFormat                 = var.inputFileFormat

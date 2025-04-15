@@ -29,7 +29,7 @@
     <artifactId>datastream-mongodb-to-firestore</artifactId>
 
     <description>
-        Stream CDC Data from DataStream to MongoDB via GCS
+        Stream CDC Data from DataStream to Firestore via GCS
     </description>
 
     <properties>
