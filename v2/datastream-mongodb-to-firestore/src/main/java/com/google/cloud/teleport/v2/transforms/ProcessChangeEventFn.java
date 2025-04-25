@@ -32,7 +32,9 @@ import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** */
+/**
+ *
+ */
 public class ProcessChangeEventFn
     extends DoFn<MongoDbChangeEventContext, MongoDbChangeEventContext> {
 
@@ -86,6 +88,7 @@ public class ProcessChangeEventFn
       LOG.info("Shadow document found: {}", shadowDoc != null ? "yes" : "no");
 
       if (isEventNewerThanShadowDoc(element, shadowDoc)) {
+<<<<<<< HEAD
         LOG.info("Processing newer event for document ID: {}", docId);
 
         if (element.isDeleteEvent()) {
@@ -104,10 +107,55 @@ public class ProcessChangeEventFn
           shadowCollection.replaceOne(
               session, lookupById, element.getShadowDocument(), new ReplaceOptions().upsert(true));
           LOG.info("Updated document and shadow document, document ID: {}", docId);
+=======
+        // Incoming event is newer
+        LOG.info("May process newer event for document ID: {}", docId);
+
+        session = client.startSession();
+
+        session.startTransaction();
+        LOG.info("Started transaction for document ID: {}", element.getDocumentId());
+
+        // Re-read the shadowDoc again, this time inside a transaction.
+        shadowDoc =
+            shadowCollection
+                .find(session, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, docId))
+                .first();
+
+        if (isEventNewerThanShadowDoc(element, shadowDoc)) {
+          LOG.info("Processing newer event for document ID: {}", docId);
+
+          if (element.isDeleteEvent()) {
+            // This is a delete event - delete the document from data collection
+            LOG.info("Deleting document with ID: {}", docId);
+            dataCollection.deleteOne(session, eq(MongoDbChangeEventContext.DOC_ID_COL, docId));
+            // Update the shadow document to record this deletion event
+            shadowCollection.replaceOne(
+                session,
+                eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, docId),
+                element.getShadowDocument(),
+                new ReplaceOptions().upsert(true));
+            LOG.info("Updated shadow document for delete event, document ID: {}", docId);
+          } else {
+            // Regular insert or update.
+            LOG.info("Updating document with ID {} with data {}", docId, element.getDataDocument());
+            dataCollection.replaceOne(
+                session,
+                eq(MongoDbChangeEventContext.DOC_ID_COL, docId),
+                element.getDataDocument(),
+                new ReplaceOptions().upsert(true));
+            shadowCollection.replaceOne(
+                session,
+                eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, docId),
+                element.getShadowDocument(),
+                new ReplaceOptions().upsert(true));
+            LOG.info("Updated document and shadow document, document ID: {}", docId);
+          }
+        } else {
+          // Existing document has a later timestamp, skip this event
+          LOG.info("Skipping event for document ID: {} as a newer version exists", docId);
+>>>>>>> 1c81a2a7e (Repeat the read inside of the transaction after the initial read suggests that the event is newer than the shadow document.)
         }
-      } else {
-        // Existing document has a later timestamp, skip this event
-        LOG.info("Skipping event for document ID: {} as a newer version exists", docId);
       }
       session.commitTransaction();
       LOG.info("Transaction committed for document ID: {}", docId);
@@ -147,11 +195,20 @@ public class ProcessChangeEventFn
     }
   }
 
+<<<<<<< HEAD
   private static boolean isEventNewerThanShadowDoc(
       MongoDbChangeEventContext event, Document shadowDoc) {
+=======
+  private static boolean isEventNewerThanShadowDoc(MongoDbChangeEventContext event,
+      Document shadowDoc) {
+>>>>>>> 1c81a2a7e (Repeat the read inside of the transaction after the initial read suggests that the event is newer than the shadow document.)
     return shadowDoc == null
         || Utils.isNewerTimestamp(
         event.getTimestampDoc(),
         (Document) shadowDoc.get(MongoDbChangeEventContext.TIMESTAMP_COL));
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 1c81a2a7e (Repeat the read inside of the transaction after the initial read suggests that the event is newer than the shadow document.)
