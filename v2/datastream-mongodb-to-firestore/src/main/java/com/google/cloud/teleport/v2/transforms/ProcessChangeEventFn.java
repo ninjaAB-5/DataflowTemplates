@@ -31,7 +31,9 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** */
+/**
+ *
+ */
 public class ProcessChangeEventFn
     extends DoFn<MongoDbChangeEventContext, MongoDbChangeEventContext> {
 
@@ -79,47 +81,54 @@ public class ProcessChangeEventFn
           shadowCollection.find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, docId)).first();
       LOG.info("Shadow document found: {}", shadowDoc != null ? "yes" : "no");
 
-      if (shadowDoc == null
-          || Utils.isNewerTimestamp(
-              element.getTimestampDoc(),
-              (Document) shadowDoc.get(MongoDbChangeEventContext.TIMESTAMP_COL))) {
+      if (isEventNewerThanShadowDoc(element, shadowDoc)) {
         // Incoming event is newer
-        LOG.info("Processing newer event for document ID: {}", docId);
+        LOG.info("May process newer event for document ID: {}", docId);
 
         session = client.startSession();
 
         session.startTransaction();
         LOG.info("Started transaction for document ID: {}", element.getDocumentId());
 
-        if (element.isDeleteEvent()) {
-          // This is a delete event - delete the document from data collection
-          LOG.info("Deleting document with ID: {}", docId);
-          dataCollection.deleteOne(session, eq(MongoDbChangeEventContext.DOC_ID_COL, docId));
-          // Update the shadow document to record this deletion event
-          shadowCollection.replaceOne(
-              session,
-              eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, docId),
-              element.getShadowDocument(),
-              new ReplaceOptions().upsert(true));
-          LOG.info("Updated shadow document for delete event, document ID: {}", docId);
+        // Re-read the shadowDoc again, this time inside a transaction.
+        shadowDoc =
+            shadowCollection
+                .find(session, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, docId))
+                .first();
+
+        if (isEventNewerThanShadowDoc(element, shadowDoc)) {
+          LOG.info("Processing newer event for document ID: {}", docId);
+
+          if (element.isDeleteEvent()) {
+            // This is a delete event - delete the document from data collection
+            LOG.info("Deleting document with ID: {}", docId);
+            dataCollection.deleteOne(session, eq(MongoDbChangeEventContext.DOC_ID_COL, docId));
+            // Update the shadow document to record this deletion event
+            shadowCollection.replaceOne(
+                session,
+                eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, docId),
+                element.getShadowDocument(),
+                new ReplaceOptions().upsert(true));
+            LOG.info("Updated shadow document for delete event, document ID: {}", docId);
+          } else {
+            // Regular insert or update.
+            LOG.info("Updating document with ID {} with data {}", docId, element.getDataDocument());
+            dataCollection.replaceOne(
+                session,
+                eq(MongoDbChangeEventContext.DOC_ID_COL, docId),
+                element.getDataDocument(),
+                new ReplaceOptions().upsert(true));
+            shadowCollection.replaceOne(
+                session,
+                eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, docId),
+                element.getShadowDocument(),
+                new ReplaceOptions().upsert(true));
+            LOG.info("Updated document and shadow document, document ID: {}", docId);
+          }
         } else {
-          // Regular insert or update.
-          LOG.info("Updating document with ID {} with data {}", docId, element.getDataDocument());
-          dataCollection.replaceOne(
-              session,
-              eq(MongoDbChangeEventContext.DOC_ID_COL, docId),
-              element.getDataDocument(),
-              new ReplaceOptions().upsert(true));
-          shadowCollection.replaceOne(
-              session,
-              eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, docId),
-              element.getShadowDocument(),
-              new ReplaceOptions().upsert(true));
-          LOG.info("Updated document and shadow document, document ID: {}", docId);
+          // Existing document has a later timestamp, skip this event
+          LOG.info("Skipping event for document ID: {} as a newer version exists", docId);
         }
-      } else {
-        // Existing document has a later timestamp, skip this event
-        LOG.info("Skipping event for document ID: {} as a newer version exists", docId);
       }
       if (session != null) {
         session.commitTransaction();
@@ -159,5 +168,13 @@ public class ProcessChangeEventFn
     if (client != null) {
       client.close();
     }
+  }
+
+  private static boolean isEventNewerThanShadowDoc(MongoDbChangeEventContext event,
+      Document shadowDoc) {
+    return shadowDoc == null
+        || Utils.isNewerTimestamp(
+        event.getTimestampDoc(),
+        (Document) shadowDoc.get(MongoDbChangeEventContext.TIMESTAMP_COL));
   }
 }
