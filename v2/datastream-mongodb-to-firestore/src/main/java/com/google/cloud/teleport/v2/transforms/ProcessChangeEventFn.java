@@ -61,11 +61,6 @@ public class ProcessChangeEventFn
     ClientSession session = null;
 
     try {
-      session = client.startSession();
-
-      session.startTransaction();
-      LOG.info("Started transaction for document ID: {}", element.getDocumentId());
-
       MongoDatabase database = client.getDatabase(targetDatabaseName);
       MongoCollection<Document> dataCollection =
           database.getCollection(element.getDataCollection());
@@ -81,9 +76,7 @@ public class ProcessChangeEventFn
       Object docId = element.getDocumentId();
       LOG.info("Querying shadow collection for document ID: {}", docId);
       Document shadowDoc =
-          shadowCollection
-              .find(session, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, docId))
-              .first();
+          shadowCollection.find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, docId)).first();
       LOG.info("Shadow document found: {}", shadowDoc != null ? "yes" : "no");
 
       if (shadowDoc == null
@@ -92,6 +85,12 @@ public class ProcessChangeEventFn
               (Document) shadowDoc.get(MongoDbChangeEventContext.TIMESTAMP_COL))) {
         // Incoming event is newer
         LOG.info("Processing newer event for document ID: {}", docId);
+
+        session = client.startSession();
+
+        session.startTransaction();
+        LOG.info("Started transaction for document ID: {}", element.getDocumentId());
+
         if (element.isDeleteEvent()) {
           // This is a delete event - delete the document from data collection
           LOG.info("Deleting document with ID: {}", docId);
@@ -122,8 +121,10 @@ public class ProcessChangeEventFn
         // Existing document has a later timestamp, skip this event
         LOG.info("Skipping event for document ID: {} as a newer version exists", docId);
       }
-      session.commitTransaction();
-      LOG.info("Transaction committed for document ID: {}", docId);
+      if (session != null) {
+        session.commitTransaction();
+        LOG.info("Transaction committed for document ID: {}", docId);
+      }
       out.get(successfulWriteTag).output(element);
       LOG.info("Successfully processed document ID: {}", element.getDocumentId());
     } catch (Exception e) {

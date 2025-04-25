@@ -114,8 +114,7 @@ public class ProcessChangeEventFnTest {
     when(mockElement.getTimestampDoc()).thenReturn(mockTimestampDocNewer);
     when(mockElement.getDataDocument()).thenReturn(mockDataDoc);
     when(mockElement.getShadowDocument()).thenReturn(mockShadowDocElement);
-    when(mockShadowCollection.find(
-            mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID)))
+    when(mockShadowCollection.find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID)))
         .thenReturn(mockFindIterable);
 
     // Mock the MultiOutputReceiver's get() method
@@ -142,8 +141,7 @@ public class ProcessChangeEventFnTest {
 
     processFn.processElement(mockContext, mockReceiver);
 
-    verify(mockShadowCollection)
-        .find(mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
+    verify(mockShadowCollection).find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
     verify(mockSession).commitTransaction();
 
     ArgumentCaptor<MongoDbChangeEventContext> successCaptor =
@@ -172,8 +170,7 @@ public class ProcessChangeEventFnTest {
 
     processFn.processElement(mockContext, mockReceiver);
 
-    verify(mockShadowCollection)
-        .find(mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
+    verify(mockShadowCollection).find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
     verify(mockSession).commitTransaction();
     ArgumentCaptor<MongoDbChangeEventContext> successCaptor =
         ArgumentCaptor.forClass(MongoDbChangeEventContext.class);
@@ -189,11 +186,9 @@ public class ProcessChangeEventFnTest {
 
     processFn.processElement(mockContext, mockReceiver);
 
-    verify(mockShadowCollection)
-        .find(mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
+    verify(mockShadowCollection).find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
     verify(mockDataCollection, never()).replaceOne(any(), any(), any(), any());
     verify(mockShadowCollection, never()).replaceOne(any(), any(), any(), any());
-    verify(mockSession).commitTransaction();
     ArgumentCaptor<MongoDbChangeEventContext> successCaptor =
         ArgumentCaptor.forClass(MongoDbChangeEventContext.class);
     verify(mockReceiver).get(ProcessChangeEventFn.successfulWriteTag);
@@ -219,8 +214,7 @@ public class ProcessChangeEventFnTest {
 
     processFn.processElement(mockContext, mockReceiver);
 
-    verify(mockShadowCollection)
-        .find(mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
+    verify(mockShadowCollection).find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
     verify(mockDataCollection)
         .deleteOne(mockSession, eq(MongoDbChangeEventContext.DOC_ID_COL, DOC_ID));
     verify(mockSession).commitTransaction();
@@ -250,8 +244,7 @@ public class ProcessChangeEventFnTest {
 
     processFn.processElement(mockContext, mockReceiver);
 
-    verify(mockShadowCollection)
-        .find(mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
+    verify(mockShadowCollection).find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
     verify(mockDataCollection)
         .deleteOne(mockSession, eq(MongoDbChangeEventContext.DOC_ID_COL, DOC_ID));
     verify(mockSession).commitTransaction();
@@ -270,11 +263,9 @@ public class ProcessChangeEventFnTest {
 
     processFn.processElement(mockContext, mockReceiver);
 
-    verify(mockShadowCollection)
-        .find(mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
+    verify(mockShadowCollection).find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
     verify(mockDataCollection, never()).deleteOne(any(), any(), any());
     verify(mockShadowCollection, never()).replaceOne(any(), any(), any(), any());
-    verify(mockSession).commitTransaction();
     ArgumentCaptor<MongoDbChangeEventContext> successCaptor =
         ArgumentCaptor.forClass(MongoDbChangeEventContext.class);
     verify(mockReceiver).get(ProcessChangeEventFn.successfulWriteTag);
@@ -284,15 +275,12 @@ public class ProcessChangeEventFnTest {
 
   @Test
   public void testProcessElementTransactionFailure() {
-    when(mockShadowCollection.find(
-            mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID)))
+    when(mockShadowCollection.find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID)))
         .thenThrow(new RuntimeException("Transaction error"));
 
     processFn.processElement(mockContext, mockReceiver);
 
-    verify(mockShadowCollection)
-        .find(mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
-    verify(mockSession).abortTransaction();
+    verify(mockShadowCollection).find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
     ArgumentCaptor<MongoDbChangeEventContext> failureCaptor =
         ArgumentCaptor.forClass(MongoDbChangeEventContext.class);
     verify(mockReceiver).get(ProcessChangeEventFn.failedWriteTag);
