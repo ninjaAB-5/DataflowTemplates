@@ -151,7 +151,7 @@ public class ProcessChangeEventFn
       MongoDbChangeEventContext event, Document shadowDoc) {
     return shadowDoc == null
         || Utils.isNewerTimestamp(
-            event.getTimestampDoc(),
-            (Document) shadowDoc.get(MongoDbChangeEventContext.TIMESTAMP_COL));
+        event.getTimestampDoc(),
+        (Document) shadowDoc.get(MongoDbChangeEventContext.TIMESTAMP_COL));
   }
 }
