@@ -37,13 +37,16 @@ import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.DoFn.MultiOutputReceiver;
 import org.apache.beam.sdk.transforms.DoFn.OutputReceiver;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 
-/** Unit tests for {@link ProcessChangeEventFn}. */
+/**
+ * Unit tests for {@link ProcessChangeEventFn}.
+ */
 @RunWith(JUnit4.class)
 public class ProcessChangeEventFnTest {
   private static final String CONNECTION_STRING = "mongodb://localhost:27017";
@@ -51,6 +54,7 @@ public class ProcessChangeEventFnTest {
   private static final String DATA_COLLECTION = "test_data";
   private static final String SHADOW_COLLECTION = "shadow_test_data";
   private static final String DOC_ID = "test_doc_id";
+  private static final Bson LOOKUP_BY_DOC_ID = eq("_id", DOC_ID);
 
   private ProcessChangeEventFn processFn;
   private DoFn.ProcessContext mockContext;
@@ -114,10 +118,7 @@ public class ProcessChangeEventFnTest {
     when(mockElement.getTimestampDoc()).thenReturn(mockTimestampDocNewer);
     when(mockElement.getDataDocument()).thenReturn(mockDataDoc);
     when(mockElement.getShadowDocument()).thenReturn(mockShadowDocElement);
-    when(mockShadowCollection.find(
-        mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID)))
-        .thenReturn(mockFindIterable);
-    when(mockShadowCollection.find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID)))
+    when(mockShadowCollection.find(mockSession, LOOKUP_BY_DOC_ID))
         .thenReturn(mockFindIterable);
 
     // Mock the MultiOutputReceiver's get() method
@@ -131,22 +132,20 @@ public class ProcessChangeEventFnTest {
     UpdateResult mockUpdateResult = mock(UpdateResult.class);
     when(mockDataCollection.replaceOne(
         mockSession,
-        eq(MongoDbChangeEventContext.DOC_ID_COL, DOC_ID),
+        LOOKUP_BY_DOC_ID,
         mockDataDoc,
         new ReplaceOptions().upsert(true)))
         .thenReturn(mockUpdateResult);
     when(mockShadowCollection.replaceOne(
         mockSession,
-        eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID),
+        LOOKUP_BY_DOC_ID,
         mockShadowDocElement,
         new ReplaceOptions().upsert(true)))
         .thenReturn(mockUpdateResult);
 
     processFn.processElement(mockContext, mockReceiver);
 
-    verify(mockShadowCollection).find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
-    verify(mockShadowCollection).find(
-        mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
+    verify(mockShadowCollection).find(mockSession, LOOKUP_BY_DOC_ID);
     verify(mockSession).commitTransaction();
 
     ArgumentCaptor<MongoDbChangeEventContext> successCaptor =
@@ -162,22 +161,20 @@ public class ProcessChangeEventFnTest {
     UpdateResult mockUpdateResult = mock(UpdateResult.class);
     when(mockDataCollection.replaceOne(
         mockSession,
-        eq(MongoDbChangeEventContext.DOC_ID_COL, DOC_ID),
+        LOOKUP_BY_DOC_ID,
         mockDataDoc,
         new ReplaceOptions().upsert(true)))
         .thenReturn(mockUpdateResult);
     when(mockShadowCollection.replaceOne(
         mockSession,
-        eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID),
+        LOOKUP_BY_DOC_ID,
         mockShadowDocElement,
         new ReplaceOptions().upsert(true)))
         .thenReturn(mockUpdateResult);
 
     processFn.processElement(mockContext, mockReceiver);
 
-    verify(mockShadowCollection).find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
-    verify(mockShadowCollection).find(
-        mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
+    verify(mockShadowCollection).find(mockSession, LOOKUP_BY_DOC_ID);
     verify(mockSession).commitTransaction();
     ArgumentCaptor<MongoDbChangeEventContext> successCaptor =
         ArgumentCaptor.forClass(MongoDbChangeEventContext.class);
@@ -193,9 +190,7 @@ public class ProcessChangeEventFnTest {
 
     processFn.processElement(mockContext, mockReceiver);
 
-    verify(mockShadowCollection).find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
-    verify(mockShadowCollection, never()).find(
-        mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
+    verify(mockShadowCollection).find(mockSession, LOOKUP_BY_DOC_ID);
     verify(mockDataCollection, never()).replaceOne(any(), any(), any(), any());
     verify(mockShadowCollection, never()).replaceOne(any(), any(), any(), any());
     ArgumentCaptor<MongoDbChangeEventContext> successCaptor =
@@ -210,24 +205,20 @@ public class ProcessChangeEventFnTest {
     when(mockElement.isDeleteEvent()).thenReturn(true);
     when(mockFindIterable.first()).thenReturn(null);
     DeleteResult mockDeleteResult = mock(DeleteResult.class);
-    when(mockDataCollection.deleteOne(
-        mockSession, eq(MongoDbChangeEventContext.DOC_ID_COL, DOC_ID)))
+    when(mockDataCollection.deleteOne(mockSession, LOOKUP_BY_DOC_ID))
         .thenReturn(mockDeleteResult);
     UpdateResult mockUpdateResult = mock(UpdateResult.class);
     when(mockShadowCollection.replaceOne(
         mockSession,
-        eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID),
+        LOOKUP_BY_DOC_ID,
         mockShadowDocElement,
         new ReplaceOptions().upsert(true)))
         .thenReturn(mockUpdateResult);
 
     processFn.processElement(mockContext, mockReceiver);
 
-    verify(mockShadowCollection).find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
-    verify(mockShadowCollection).find(
-        mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
-    verify(mockDataCollection)
-        .deleteOne(mockSession, eq(MongoDbChangeEventContext.DOC_ID_COL, DOC_ID));
+    verify(mockShadowCollection).find(mockSession, LOOKUP_BY_DOC_ID);
+    verify(mockDataCollection).deleteOne(mockSession, LOOKUP_BY_DOC_ID);
     verify(mockSession).commitTransaction();
     verify(mockReceiver).get(ProcessChangeEventFn.successfulWriteTag);
     ArgumentCaptor<MongoDbChangeEventContext> successCaptor =
@@ -243,23 +234,20 @@ public class ProcessChangeEventFnTest {
     when(mockFindIterable.first()).thenReturn(mockShadowDocOlder);
     DeleteResult mockDeleteResult = mock(DeleteResult.class);
     when(mockDataCollection.deleteOne(
-        mockSession, eq(MongoDbChangeEventContext.DOC_ID_COL, DOC_ID)))
+        mockSession, LOOKUP_BY_DOC_ID))
         .thenReturn(mockDeleteResult);
     UpdateResult mockUpdateResult = mock(UpdateResult.class);
     when(mockShadowCollection.replaceOne(
         mockSession,
-        eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID),
+        LOOKUP_BY_DOC_ID,
         mockShadowDocElement,
         new ReplaceOptions().upsert(true)))
         .thenReturn(mockUpdateResult);
 
     processFn.processElement(mockContext, mockReceiver);
 
-    verify(mockShadowCollection).find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
-    verify(mockShadowCollection).find(
-        mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
-    verify(mockDataCollection)
-        .deleteOne(mockSession, eq(MongoDbChangeEventContext.DOC_ID_COL, DOC_ID));
+    verify(mockShadowCollection).find(mockSession, LOOKUP_BY_DOC_ID);
+    verify(mockDataCollection).deleteOne(mockSession, LOOKUP_BY_DOC_ID);
     verify(mockSession).commitTransaction();
     ArgumentCaptor<MongoDbChangeEventContext> successCaptor =
         ArgumentCaptor.forClass(MongoDbChangeEventContext.class);
@@ -276,9 +264,7 @@ public class ProcessChangeEventFnTest {
 
     processFn.processElement(mockContext, mockReceiver);
 
-    verify(mockShadowCollection).find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
-    verify(mockShadowCollection, never()).find(
-        mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
+    verify(mockShadowCollection).find(mockSession, LOOKUP_BY_DOC_ID);
     verify(mockDataCollection, never()).deleteOne(any(), any(), any());
     verify(mockShadowCollection, never()).replaceOne(any(), any(), any(), any());
     ArgumentCaptor<MongoDbChangeEventContext> successCaptor =
@@ -290,14 +276,12 @@ public class ProcessChangeEventFnTest {
 
   @Test
   public void testProcessElementTransactionFailure() {
-    when(mockShadowCollection.find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID)))
+    when(mockShadowCollection.find(mockSession, LOOKUP_BY_DOC_ID))
         .thenThrow(new RuntimeException("Transaction error"));
 
     processFn.processElement(mockContext, mockReceiver);
 
-    verify(mockShadowCollection).find(eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
-    verify(mockShadowCollection, never()).find(
-        mockSession, eq(MongoDbChangeEventContext.SHADOW_DOC_ID_COL, DOC_ID));
+    verify(mockShadowCollection).find(mockSession, LOOKUP_BY_DOC_ID);
     ArgumentCaptor<MongoDbChangeEventContext> failureCaptor =
         ArgumentCaptor.forClass(MongoDbChangeEventContext.class);
     verify(mockReceiver).get(ProcessChangeEventFn.failedWriteTag);
