@@ -44,9 +44,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 
-/**
- * Unit tests for {@link ProcessChangeEventFn}.
- */
+/** Unit tests for {@link ProcessChangeEventFn}. */
 @RunWith(JUnit4.class)
 public class ProcessChangeEventFnTest {
   private static final String CONNECTION_STRING = "mongodb://localhost:27017";
@@ -118,8 +116,7 @@ public class ProcessChangeEventFnTest {
     when(mockElement.getTimestampDoc()).thenReturn(mockTimestampDocNewer);
     when(mockElement.getDataDocument()).thenReturn(mockDataDoc);
     when(mockElement.getShadowDocument()).thenReturn(mockShadowDocElement);
-    when(mockShadowCollection.find(mockSession, LOOKUP_BY_DOC_ID))
-        .thenReturn(mockFindIterable);
+    when(mockShadowCollection.find(mockSession, LOOKUP_BY_DOC_ID)).thenReturn(mockFindIterable);
 
     // Mock the MultiOutputReceiver's get() method
     when(mockReceiver.get(ProcessChangeEventFn.successfulWriteTag)).thenReturn(mockSuccessReceiver);
@@ -131,16 +128,10 @@ public class ProcessChangeEventFnTest {
     when(mockFindIterable.first()).thenReturn(null);
     UpdateResult mockUpdateResult = mock(UpdateResult.class);
     when(mockDataCollection.replaceOne(
-        mockSession,
-        LOOKUP_BY_DOC_ID,
-        mockDataDoc,
-        new ReplaceOptions().upsert(true)))
+            mockSession, LOOKUP_BY_DOC_ID, mockDataDoc, new ReplaceOptions().upsert(true)))
         .thenReturn(mockUpdateResult);
     when(mockShadowCollection.replaceOne(
-        mockSession,
-        LOOKUP_BY_DOC_ID,
-        mockShadowDocElement,
-        new ReplaceOptions().upsert(true)))
+            mockSession, LOOKUP_BY_DOC_ID, mockShadowDocElement, new ReplaceOptions().upsert(true)))
         .thenReturn(mockUpdateResult);
 
     processFn.processElement(mockContext, mockReceiver);
@@ -160,16 +151,10 @@ public class ProcessChangeEventFnTest {
     when(mockFindIterable.first()).thenReturn(mockShadowDocOlder);
     UpdateResult mockUpdateResult = mock(UpdateResult.class);
     when(mockDataCollection.replaceOne(
-        mockSession,
-        LOOKUP_BY_DOC_ID,
-        mockDataDoc,
-        new ReplaceOptions().upsert(true)))
+            mockSession, LOOKUP_BY_DOC_ID, mockDataDoc, new ReplaceOptions().upsert(true)))
         .thenReturn(mockUpdateResult);
     when(mockShadowCollection.replaceOne(
-        mockSession,
-        LOOKUP_BY_DOC_ID,
-        mockShadowDocElement,
-        new ReplaceOptions().upsert(true)))
+            mockSession, LOOKUP_BY_DOC_ID, mockShadowDocElement, new ReplaceOptions().upsert(true)))
         .thenReturn(mockUpdateResult);
 
     processFn.processElement(mockContext, mockReceiver);
@@ -205,14 +190,10 @@ public class ProcessChangeEventFnTest {
     when(mockElement.isDeleteEvent()).thenReturn(true);
     when(mockFindIterable.first()).thenReturn(null);
     DeleteResult mockDeleteResult = mock(DeleteResult.class);
-    when(mockDataCollection.deleteOne(mockSession, LOOKUP_BY_DOC_ID))
-        .thenReturn(mockDeleteResult);
+    when(mockDataCollection.deleteOne(mockSession, LOOKUP_BY_DOC_ID)).thenReturn(mockDeleteResult);
     UpdateResult mockUpdateResult = mock(UpdateResult.class);
     when(mockShadowCollection.replaceOne(
-        mockSession,
-        LOOKUP_BY_DOC_ID,
-        mockShadowDocElement,
-        new ReplaceOptions().upsert(true)))
+            mockSession, LOOKUP_BY_DOC_ID, mockShadowDocElement, new ReplaceOptions().upsert(true)))
         .thenReturn(mockUpdateResult);
 
     processFn.processElement(mockContext, mockReceiver);
@@ -233,15 +214,10 @@ public class ProcessChangeEventFnTest {
     when(mockElement.isDeleteEvent()).thenReturn(true);
     when(mockFindIterable.first()).thenReturn(mockShadowDocOlder);
     DeleteResult mockDeleteResult = mock(DeleteResult.class);
-    when(mockDataCollection.deleteOne(
-        mockSession, LOOKUP_BY_DOC_ID))
-        .thenReturn(mockDeleteResult);
+    when(mockDataCollection.deleteOne(mockSession, LOOKUP_BY_DOC_ID)).thenReturn(mockDeleteResult);
     UpdateResult mockUpdateResult = mock(UpdateResult.class);
     when(mockShadowCollection.replaceOne(
-        mockSession,
-        LOOKUP_BY_DOC_ID,
-        mockShadowDocElement,
-        new ReplaceOptions().upsert(true)))
+            mockSession, LOOKUP_BY_DOC_ID, mockShadowDocElement, new ReplaceOptions().upsert(true)))
         .thenReturn(mockUpdateResult);
 
     processFn.processElement(mockContext, mockReceiver);

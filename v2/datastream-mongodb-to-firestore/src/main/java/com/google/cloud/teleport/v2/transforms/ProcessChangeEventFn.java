@@ -32,9 +32,7 @@ import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- *
- */
+/** */
 public class ProcessChangeEventFn
     extends DoFn<MongoDbChangeEventContext, MongoDbChangeEventContext> {
 
@@ -96,24 +94,15 @@ public class ProcessChangeEventFn
           dataCollection.deleteOne(session, lookupById);
           // Update the shadow document to record this deletion event
           shadowCollection.replaceOne(
-              session,
-              lookupById,
-              element.getShadowDocument(),
-              new ReplaceOptions().upsert(true));
+              session, lookupById, element.getShadowDocument(), new ReplaceOptions().upsert(true));
           LOG.info("Updated shadow document for delete event, document ID: {}", docId);
         } else {
           // Regular insert or update.
           LOG.info("Updating document with ID {} with data {}", docId, element.getDataDocument());
           dataCollection.replaceOne(
-              session,
-              lookupById,
-              element.getDataDocument(),
-              new ReplaceOptions().upsert(true));
+              session, lookupById, element.getDataDocument(), new ReplaceOptions().upsert(true));
           shadowCollection.replaceOne(
-              session,
-              lookupById,
-              element.getShadowDocument(),
-              new ReplaceOptions().upsert(true));
+              session, lookupById, element.getShadowDocument(), new ReplaceOptions().upsert(true));
           LOG.info("Updated document and shadow document, document ID: {}", docId);
         }
       } else {
@@ -158,11 +147,11 @@ public class ProcessChangeEventFn
     }
   }
 
-  private static boolean isEventNewerThanShadowDoc(MongoDbChangeEventContext event,
-                                                   Document shadowDoc) {
+  private static boolean isEventNewerThanShadowDoc(
+      MongoDbChangeEventContext event, Document shadowDoc) {
     return shadowDoc == null
         || Utils.isNewerTimestamp(
-        event.getTimestampDoc(),
-        (Document) shadowDoc.get(MongoDbChangeEventContext.TIMESTAMP_COL));
+            event.getTimestampDoc(),
+            (Document) shadowDoc.get(MongoDbChangeEventContext.TIMESTAMP_COL));
   }
 }
