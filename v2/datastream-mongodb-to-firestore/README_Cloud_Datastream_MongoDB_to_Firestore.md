@@ -1,10 +1,11 @@
 
 Datastream to Firestore template
 ---
-The Datastream MongoDB to Firestore template is a streaming pipeline that reads <a
-href="https://cloud.google.com/datastream/docs">Datastream</a> events from a
-Cloud Storage bucket and writes them to a Firestore with MongoDB compatibility database. It is intended for
-data migration from Datastream sources to Firestore with MongoDB compatibility.
+The Datastream MongoDB to Firestore template is a streaming pipeline that reads
+<a href="https://cloud.google.com/datastream/docs">Datastream</a> events from a
+Cloud Storage bucket and writes them to a Firestore with MongoDB compatibility
+database. It is intended for data migration from Datastream sources to Firestore
+with MongoDB compatibility.
 
 Data consistency is guaranteed only at the end of migration when all data has
 been written to the destination database. To store ordering information for each
@@ -75,7 +76,7 @@ on [Metadata Annotations](https://github.com/GoogleCloudPlatform/DataflowTemplat
 
 :star2: Those dependencies are pre-installed if you use Google Cloud Shell!
 
-[![Open in Cloud Shell](http://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2FDataflowTemplates.git&cloudshell_open_in_editor=v2/datastream-mongodb-to-mongodb/src/main/java/com/google/cloud/teleport/v2/templates/DataStreamMongoDBToMongoDB.java)
+[![Open in Cloud Shell](http://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2FDataflowTemplates.git&cloudshell_open_in_editor=v2/datastream-mongodb-to-firestore/src/main/java/com/google/cloud/teleport/v2/templates/DataStreamMongoDBToFirestore.java)
 
 ### Templates Plugin
 
@@ -105,8 +106,8 @@ mvn clean package -PtemplatesStage  \
 -DprojectId="$PROJECT" \
 -DbucketName="$BUCKET_NAME" \
 -DstagePrefix="templates" \
--DtemplateName="Cloud_Datastream_MongoDB_to_MongoDB" \
--f v2/datastream-mongodb-to-mongodb
+-DtemplateName="Cloud_Datastream_MongoDB_to_Firestore" \
+-f v2/datastream-mongodb-to-firestore
 ```
 
 
@@ -114,7 +115,7 @@ The command should build and save the template to Google Cloud, and then print
 the complete location on Cloud Storage:
 
 ```
-Flex Template was staged! gs://<bucket-name>/templates/flex/Cloud_Datastream_MongoDB_to_MongoDB
+Flex Template was staged! gs://<bucket-name>/templates/flex/Cloud_Datastream_MongoDB_to_Firestore
 ```
 
 The specific path should be copied as it will be used in the following steps.
