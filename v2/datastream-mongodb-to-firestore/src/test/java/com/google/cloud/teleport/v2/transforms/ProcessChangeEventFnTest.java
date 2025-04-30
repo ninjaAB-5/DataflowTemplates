@@ -128,10 +128,17 @@ public class ProcessChangeEventFnTest {
     when(mockFindIterable.first()).thenReturn(null);
     UpdateResult mockUpdateResult = mock(UpdateResult.class);
     when(mockDataCollection.replaceOne(
+<<<<<<< HEAD
         mockSession, LOOKUP_BY_DOC_ID, mockDataDoc, new ReplaceOptions().upsert(true)))
         .thenReturn(mockUpdateResult);
     when(mockShadowCollection.replaceOne(
         mockSession, LOOKUP_BY_DOC_ID, mockShadowDocElement, new ReplaceOptions().upsert(true)))
+=======
+            mockSession, LOOKUP_BY_DOC_ID, mockDataDoc, new ReplaceOptions().upsert(true)))
+        .thenReturn(mockUpdateResult);
+    when(mockShadowCollection.replaceOne(
+            mockSession, LOOKUP_BY_DOC_ID, mockShadowDocElement, new ReplaceOptions().upsert(true)))
+>>>>>>> 5b47d5b00 (resume the condition for oracle source)
         .thenReturn(mockUpdateResult);
 
     processFn.processElement(mockContext, mockReceiver);
@@ -151,10 +158,17 @@ public class ProcessChangeEventFnTest {
     when(mockFindIterable.first()).thenReturn(mockShadowDocOlder);
     UpdateResult mockUpdateResult = mock(UpdateResult.class);
     when(mockDataCollection.replaceOne(
+<<<<<<< HEAD
         mockSession, LOOKUP_BY_DOC_ID, mockDataDoc, new ReplaceOptions().upsert(true)))
         .thenReturn(mockUpdateResult);
     when(mockShadowCollection.replaceOne(
         mockSession, LOOKUP_BY_DOC_ID, mockShadowDocElement, new ReplaceOptions().upsert(true)))
+=======
+            mockSession, LOOKUP_BY_DOC_ID, mockDataDoc, new ReplaceOptions().upsert(true)))
+        .thenReturn(mockUpdateResult);
+    when(mockShadowCollection.replaceOne(
+            mockSession, LOOKUP_BY_DOC_ID, mockShadowDocElement, new ReplaceOptions().upsert(true)))
+>>>>>>> 5b47d5b00 (resume the condition for oracle source)
         .thenReturn(mockUpdateResult);
 
     processFn.processElement(mockContext, mockReceiver);
@@ -193,7 +207,11 @@ public class ProcessChangeEventFnTest {
     when(mockDataCollection.deleteOne(mockSession, LOOKUP_BY_DOC_ID)).thenReturn(mockDeleteResult);
     UpdateResult mockUpdateResult = mock(UpdateResult.class);
     when(mockShadowCollection.replaceOne(
+<<<<<<< HEAD
         mockSession, LOOKUP_BY_DOC_ID, mockShadowDocElement, new ReplaceOptions().upsert(true)))
+=======
+            mockSession, LOOKUP_BY_DOC_ID, mockShadowDocElement, new ReplaceOptions().upsert(true)))
+>>>>>>> 5b47d5b00 (resume the condition for oracle source)
         .thenReturn(mockUpdateResult);
 
     processFn.processElement(mockContext, mockReceiver);
@@ -217,7 +235,11 @@ public class ProcessChangeEventFnTest {
     when(mockDataCollection.deleteOne(mockSession, LOOKUP_BY_DOC_ID)).thenReturn(mockDeleteResult);
     UpdateResult mockUpdateResult = mock(UpdateResult.class);
     when(mockShadowCollection.replaceOne(
+<<<<<<< HEAD
         mockSession, LOOKUP_BY_DOC_ID, mockShadowDocElement, new ReplaceOptions().upsert(true)))
+=======
+            mockSession, LOOKUP_BY_DOC_ID, mockShadowDocElement, new ReplaceOptions().upsert(true)))
+>>>>>>> 5b47d5b00 (resume the condition for oracle source)
         .thenReturn(mockUpdateResult);
 
     processFn.processElement(mockContext, mockReceiver);
