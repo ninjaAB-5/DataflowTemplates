@@ -43,12 +43,12 @@ public final class Utils {
   }
 
   public static Document jsonToDocument(String jsonString, Object documentId) {
-    LOG.info("Converting json string {} for id {} to Document.", jsonString, documentId);
     Document rawDoc;
     try {
       rawDoc = Document.parse(Document.parse(jsonString).get(DATA_COL).toString());
     } catch (Exception ex) {
-      LOG.info("Document parsing failed due to {}, try casting.", ex.getMessage());
+      LOG.info(
+          "Document parsing for {} failed due to {}, try casting.", jsonString, ex.getMessage());
       rawDoc = (Document) Document.parse(jsonString).get(DATA_COL);
     }
     rawDoc.put(MongoDbChangeEventContext.DOC_ID_COL, documentId);
