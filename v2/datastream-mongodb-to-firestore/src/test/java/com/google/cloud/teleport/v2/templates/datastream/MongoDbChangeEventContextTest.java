@@ -399,4 +399,12 @@ public class MongoDbChangeEventContextTest {
 
     assertEquals(jsonString, expectedJson);
   }
+
+  @Test
+  public void testIsDlqReconsumed() throws JsonProcessingException {
+    MongoDbChangeEventContext context = new MongoDbChangeEventContext(insertEvent, SHADOW_PREFIX);
+    assertFalse(context.getIsDlqReconsumed());
+    context.setIsDlqReconsumed();
+    assertTrue(context.getIsDlqReconsumed());
+  }
 }

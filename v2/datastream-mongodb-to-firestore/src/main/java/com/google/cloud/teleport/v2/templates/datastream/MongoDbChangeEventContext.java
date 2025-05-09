@@ -57,6 +57,7 @@ public class MongoDbChangeEventContext implements Serializable {
   private final String jsonStringData;
   private final boolean isDeleteEvent;
   private final Document timestampDoc;
+  private boolean isDlqReconsumed = false;
 
   /** Gets the change type from the event metadata. */
   private String getChangeType(JsonNode changeEvent) {
@@ -199,6 +200,10 @@ public class MongoDbChangeEventContext implements Serializable {
     return timestampDoc;
   }
 
+  public boolean getIsDlqReconsumed() {
+    return isDlqReconsumed;
+  }
+
   /**
    * Override toString() to provide a proper JSON representation of this object. This ensures that
    * when the object is serialized to a string, it produces valid JSON.
@@ -254,5 +259,9 @@ public class MongoDbChangeEventContext implements Serializable {
       return Objects.equals(this.toString(), other.toString());
     }
     return false;
+  }
+
+  public void setIsDlqReconsumed() {
+    this.isDlqReconsumed = true;
   }
 }
